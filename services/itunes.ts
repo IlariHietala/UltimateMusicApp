@@ -1,6 +1,9 @@
+// Vastaa iTunesin hakurajapinnan kutsumisesta
+// Palauttaa kappalelistan (Track-tyyppisenä)
+
 import { Track } from '../types';
 
-// iTunes Search API: https://itunes.apple.com/search?term={term}&entity=song&limit=25
+// iTunes Search API palauttaa raakamuotoisen datan
 type ITunesRaw = {
   trackId: number;
   trackName: string;
@@ -10,16 +13,18 @@ type ITunesRaw = {
   artworkUrl100?: string;
 };
 
+// API-vastaus sisältää resultCount + results[]
 type ITunesResponse = {
   resultCount: number;
   results: ITunesRaw[];
 };
 
+// Hakufunktio, jota käytetään App.tsx:ssä
 export async function searchITunesTracks(term: string): Promise<Track[]> {
   const params = new URLSearchParams({
-    term,
-    entity: 'song',
-    limit: '25',
+    term,          // hakusana
+    entity: 'song',// haetaan vain kappaleita
+    limit: '25',   // max 25 tulosta
   });
 
   const url = `https://itunes.apple.com/search?${params.toString()}`;
@@ -30,6 +35,7 @@ export async function searchITunesTracks(term: string): Promise<Track[]> {
 
   const json = (await res.json()) as ITunesResponse;
 
+  // Muutetaan tulos omaan Track-tyyppiin
   return (json.results ?? []).map((r) => ({
     trackId: r.trackId,
     trackName: r.trackName,
